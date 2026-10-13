@@ -16,8 +16,8 @@ Hecha con **FastAPI**, **SQLModel** (SQLite) y plantillas **Jinja2**. Incluye un
 ## Cómo ejecutarlo (Windows)
 
 ```powershell
-git clone <url-del-repositorio>
-cd tracker-candidaturas
+git clone https://github.com/marinaiglesiasneila/Tracker-candidaturas.git
+cd Tracker-candidaturas
 python -m venv .venv
 .venv\Scripts\activate
 pip install -r requirements.txt
