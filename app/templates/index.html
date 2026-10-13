@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Tracker de candidaturas</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<main>
+    <header>
+        <h1>Mis candidaturas</h1>
+        <p class="resumen">
+            {{ total }} en total{% if pendientes %}, {{ pendientes }} sin respuesta desde hace 7 días o más{% endif %}
+        </p>
+    </header>
+
+    <form class="alta" action="/nueva" method="post">
+        <input type="text" name="empresa" placeholder="Empresa" required>
+        <input type="text" name="puesto" placeholder="Puesto" required>
+        <input type="url" name="enlace" placeholder="Enlace a la oferta (opcional)">
+        <button type="submit" class="primario">Añadir candidatura</button>
+    </form>
+
+    <nav class="filtros" aria-label="Filtrar por estado">
+        <a href="/" class="{{ 'activo' if not filtro }}">Todas ({{ total }})</a>
+        {% for e in estados %}
+        <a href="/?estado={{ e }}" class="{{ 'activo' if filtro == e }}">{{ e|capitalize }} ({{ conteo[e] }})</a>
+        {% endfor %}
+    </nav>
+
+    {% if candidaturas %}
+    <div class="tabla-scroll">
+        <table>
+            <thead>
+                <tr>
+                    <th>Empresa</th>
+                    <th>Puesto</th>
+                    <th>Estado</th>
+                    <th>Enviada</th>
+                    <th></th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for c in candidaturas %}
+                <tr>
+                    <td class="empresa">
+                        {% if c.enlace %}<a href="{{ c.enlace }}" target="_blank" rel="noopener">{{ c.empresa }}</a>{% else %}{{ c.empresa }}{% endif %}
+                    </td>
+                    <td>{{ c.puesto }}</td>
+                    <td>
+                        <form action="/estado/{{ c.id }}" method="post">
+                            <select name="estado" class="estado estado-{{ c.estado }}" aria-label="Estado de {{ c.empresa }}" onchange="this.form.submit()">
+                                {% for e in estados %}
+                                <option value="{{ e }}" {% if c.estado == e %}selected{% endif %}>{{ e|capitalize }}</option>
+                                {% endfor %}
+                            </select>
+                        </form>
+                    </td>
+                    <td>{{ c.fecha.strftime('%d/%m/%Y') }}</td>
+                    <td>
+                        {% if necesita_seguimiento(c) %}
+                        <span class="aviso">Sin respuesta, {{ (hoy - c.fecha).days }} días</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <form action="/borrar/{{ c.id }}" method="post" onsubmit="return confirm('¿Borrar la candidatura de {{ c.empresa|e }}?')">
+                            <button type="submit" class="borrar">Borrar</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% elif filtro %}
+    <p class="vacio">No hay candidaturas con el estado «{{ filtro }}».</p>
+    {% else %}
+    <p class="vacio">Aún no hay ninguna. Añade la primera con el formulario de arriba.</p>
+    {% endif %}
+</main>
+</body>
+</html>
